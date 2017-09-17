@@ -1,8 +1,9 @@
 This is my to-do list for this repository. Message me with other ideas!
 
 1. Precipitation plots.
-2. Complete webpage functionality.
-3. Climatology comparisons.
+2. Box and whisker plots
+3. Complete webpage functionality.
+4. Climatology comparisons.
 
 Requests:
 
