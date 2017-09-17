@@ -28,17 +28,17 @@ def plotter(dataset,namestr,savestr,season):
     # y axis and title
     plt.ylabel('Temperature (degrees Fahrenheit)')
     if season == 'warm':
-        plt.ylim([50,110])
+        plt.ylim([40,110])
     elif season == 'cold':
-        plt.ylim([0,80])
+        plt.ylim([0,90])
     else:
         plt.ylim([0,110])
     plt.title('GEFS Ensemble Daily %s' % namestr)
     plt.savefig(savestr,bbox_inches='tight')
 
 # open the csv files
-max_temp_df = pandas.DataFrame.from_csv('/home/jgodwin/python/gefs/maxtemps.csv')
-min_temp_df = pandas.DataFrame.from_csv('/home/jgodwin/python/gefs/mintemps.csv')
+max_temp_df = pandas.DataFrame.from_csv('/home/jgodwin/python/gefs-plots/maxtemps.csv')
+min_temp_df = pandas.DataFrame.from_csv('/home/jgodwin/python/gefs-plots/mintemps.csv')
 season = 'warm'
 
 # convert the valid times into local times

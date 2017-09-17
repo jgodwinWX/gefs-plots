@@ -5,6 +5,7 @@ import numpy as np
 import pandas
 import os
 import pygrib
+import time
 
 def lonConvert(longitude):
     # -180 to 0 is between 180 and 360
@@ -28,26 +29,30 @@ def kelvinToFahrenheit(temperature):
 # set target latitude and longitude
 mylat = 32.896944
 mylon = -97.038056
-directory = '/home/jgodwin/python/gefs/grib/'
+directory = '/home/jgodwin/python/gefs-plots/grib/'
 
-max_temp = np.zeros([20,65])
-min_temp = np.zeros([20,65])
+max_temp = np.empty([20,65])
+min_temp = np.empty([20,65])
 
-for filename in os.listdir(directory):
+min_temp[:,:] = np.NAN
+max_temp[:,:] = np.NAN
+
+for filename in sorted(os.listdir(directory)):
     print filename
-    pert = float(filename[22:24]) - 1.0
-    hour = float(filename[25:]) / 6.0
+    pert = float(filename[-2:]) - 1.0
+    hour = float(filename[-6:-3]) / 6.0
 
     # open the grib file
     grbs = pygrib.open(directory + filename)
 
     # check for missing/bad files
     if os.stat(directory + filename).st_size < 40000:
-        my_temp[int(pert)][int(hour)] = float('nan')
+        max_temp[int(pert)][int(hour)] = float('nan')
+        min_temp[int(pert)][int(hour)] = float('nan')
         continue
 
     # get the temperature data (Kelvin)
-    if '_00' in filename:
+    if '_000_' in filename:
         max_temp_k = grbs.select(name='2 metre temperature')[0].values
         min_temp_k = max_temp_k
         lats,lons = grbs.select(name='2 metre temperature')[0].latlons()
@@ -64,8 +69,16 @@ for filename in os.listdir(directory):
     grblat = np.where(lats==round(mylat))[0][0]
     mylon = lonConvert(round(mylon))
     grblon = np.where(lons==mylon)[1][0]
-    max_temp[int(pert)][int(hour)] = max_temp_f[grblat,grblon]
-    min_temp[int(pert)][int(hour)] = min_temp_f[grblat,grblon]
+    # sanity check the values
+    if max_temp_f[grblat,grblon] > 150.0 or max_temp_f[grblat,grblon] < -100.0:
+        max_temp[int(pert)][int(hour)] = float('nan')
+    else:
+        max_temp[int(pert)][int(hour)] = max_temp_f[grblat,grblon]
+
+    if min_temp_f[grblat,grblon] > 150.0 or min_temp_f[grblat,grblon] < -100.0:
+        min_temp[int(pert)][int(hour)] = float('nan')
+    else:
+        min_temp[int(pert)][int(hour)] = min_temp_f[grblat,grblon]
 
 # compute ensemble mean at each forecast hour
 max_ensmean = [0.0] * 65
@@ -102,5 +115,5 @@ max_df.index.name = 'ValidTime'
 min_df = pandas.DataFrame(np.transpose(min_temp),index=vtimes,columns=column_headers)
 min_df.index_name = 'ValidTime'
 
-max_df.to_csv('/home/jgodwin/python/gefs/maxtemps.csv')
-min_df.to_csv('/home/jgodwin/python/gefs/mintemps.csv')
+max_df.to_csv('/home/jgodwin/python/gefs-plots/maxtemps.csv')
+min_df.to_csv('/home/jgodwin/python/gefs-plots/mintemps.csv')

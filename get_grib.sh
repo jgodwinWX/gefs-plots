@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # user settings
-GRIBDIR=/home/jgodwin/python/gefs/grib
+GRIBDIR=/home/jgodwin/python/gefs-plots/grib
 
 # clean out the old grib data
 rm $GRIBDIR/*
@@ -52,12 +52,26 @@ for i in {0..384..6}
             if [ $i -eq 0 ]
             then
                 echo "running get_inv.pl"
+                if [ $i -lt 10 ]
+                then
+                    fcstHour="00${i}"
+                elif [ $i -lt 100 ] && [ $i -ge 10 ]
+                then
+                    fcstHour="0${i}"
+                fi
                 perl get_inv.pl "${url}.idx" | grep ":TMP:" | grep ":2 m above ground" | \
-                perl get_grib.pl "${url}" $GRIBDIR/grib_gefs_"$YEAR""$MONTH""$DATE"_"$RUN"_"$pert"_"$fcstHour"
+                perl get_grib.pl "${url}" $GRIBDIR/grib_gefs_"$YEAR""$MONTH""$DATE"_"$RUN"_"$fcstHour"_"$pert"
             else
+                if [ $i -lt 10 ]
+                then
+                    fcstHour="00${i}"
+                elif [ $i -lt 100 ] && [ $i -ge 10 ]
+                then
+                    fcstHour="0${i}"
+                fi
                 #perl get_inv.pl "${url}.idx" | grep ":TMAX:" \
                 perl get_inv.pl "${url}.idx" | grep -E ":(TMAX|TMIN):2 m above ground" | \
-                perl get_grib.pl "${url}" $GRIBDIR/grib_gefs_"$YEAR""$MONTH""$DATE"_"$RUN"_"$pert"_"$fcstHour"
+                perl get_grib.pl "${url}" $GRIBDIR/grib_gefs_"$YEAR""$MONTH""$DATE"_"$RUN"_"$fcstHour"_"$pert"
             fi
         done   
     done
