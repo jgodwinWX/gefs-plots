@@ -3,3 +3,11 @@ This is my to-do list for this repository. Message me with other ideas!
 1. Precipitation plots.
 2. Complete webpage functionality.
 3. Climatology comparisons.
+
+Requests:
+
+(None so far).
+
+Completed:
+
+1. Temperature (including MaxT and MinT).
