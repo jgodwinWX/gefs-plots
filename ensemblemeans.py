@@ -31,16 +31,16 @@ def mmToInches(precipitation):
 
 # set target latitude and longitude
 # DFW
-#mylat = 32.896944
-#mylon = -97.038056
+mylat = 32.896944
+mylon = -97.038056
 
 # Lincoln, NE
 #mylat = 40.810556
 #mylon = -96.680278
 
 # Baton Rouge, LA
-mylat = 30.45
-mylon = -91.14
+#mylat = 30.45
+#mylon = -91.14
 
 # Laramie, WY
 #mylat = 41.316667
@@ -109,6 +109,8 @@ for filename in sorted(os.listdir(directory)):
 
     precip[int(pert)][int(hour)] = precip_in[grblat,grblon]
 
+    grbs.close()
+
 # compute ensemble mean at each forecast hour
 max_ensmean = [0.0] * 65
 min_ensmean = [0.0] * 65
@@ -130,6 +132,7 @@ plt.grid()
 # x axis settings
 plt.xticks(rotation=90)
 plt.xlabel('Date/Time (UTC)')
+plt.xlim([np.min(vtimes),np.max(vtimes)])
 ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%H'))
 
@@ -137,7 +140,7 @@ ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%H'))
 plt.ylabel('Temperature (degrees Fahrenheit)')
 plt.title('GEFS Ensemble Mean 6-Hourly Temperature')
 plt.legend(loc='upper right')
-plt.savefig('ensmean.png',bbox_inches='tight')
+plt.savefig('ensmean_temp.png',bbox_inches='tight')
 
 # write data out for each ensemble member
 column_headers = [str('gep' + str(x)) for x in range(1,21)]
@@ -159,6 +162,7 @@ plt.grid()
 # x axis settings
 plt.xticks(rotation=90)
 plt.xlabel('Date/Time (UTC)')
+plt.xlim([np.min(vtimes),np.max(vtimes)])
 ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%H'))
 
