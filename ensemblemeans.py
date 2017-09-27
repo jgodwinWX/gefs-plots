@@ -31,16 +31,16 @@ def mmToInches(precipitation):
 
 # set target latitude and longitude
 # DFW
-mylat = 32.896944
-mylon = -97.038056
+#mylat = 32.896944
+#mylon = -97.038056
 
 # Lincoln, NE
 #mylat = 40.810556
 #mylon = -96.680278
 
 # Baton Rouge, LA
-#mylat = 30.45
-#mylon = -91.14
+mylat = 30.45
+mylon = -91.14
 
 # Laramie, WY
 #mylat = 41.316667
