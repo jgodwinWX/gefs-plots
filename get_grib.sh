@@ -23,6 +23,7 @@ then
     RUN=12
 elif [ $HOUR -ge 00 ] && [ $HOUR -lt 6 ]
 then
+    DATE=$(date -u -d'yesterday' +"%d")
     RUN=18
 else
     echo "Invalid hour!"
@@ -70,7 +71,7 @@ for i in {0..384..6}
                     fcstHour="0${i}"
                 fi
                 #perl get_inv.pl "${url}.idx" | grep ":TMAX:" \
-                perl get_inv.pl "${url}.idx" | grep -E ":(TMAX|TMIN):2 m above ground" | \
+                perl get_inv.pl "${url}.idx" | grep -E ":(TMAX|TMIN|APCP)" | \
                 perl get_grib.pl "${url}" $GRIBDIR/grib_gefs_"$YEAR""$MONTH""$DATE"_"$RUN"_"$fcstHour"_"$pert"
             fi
         done   
