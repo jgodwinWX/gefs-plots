@@ -2,6 +2,7 @@ import calendar
 import datetime
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import numpy
 import pandas
 
 def utc_to_local(utc_dt,offset):
@@ -36,9 +37,33 @@ def plotter(dataset,namestr,savestr,season):
     plt.title('GEFS Ensemble Daily %s' % namestr)
     plt.savefig(savestr,bbox_inches='tight')
 
+def precip_plotter(dataset,namestr,savestr):
+    plt.clf()
+
+    fig = plt.figure()
+
+    ax = fig.add_subplot(1,1,1)
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%H'))
+
+    plt.plot(numpy.cumsum(dataset))
+    plt.grid()
+
+    # x axis
+    plt.xticks(rotation=90)
+    plt.xlabel('Date/Time (Local)')
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %b-%d'))
+
+    # y axis and title
+    plt.ylabel('Precipitation (inches)')
+    plt.title('GEFS Ensemble Daily %s' % namestr)
+    plt.savefig(savestr,bbox_inches='tight')
+
 # open the csv files
 max_temp_df = pandas.DataFrame.from_csv('/home/jgodwin/python/gefs-plots/maxtemps.csv')
 min_temp_df = pandas.DataFrame.from_csv('/home/jgodwin/python/gefs-plots/mintemps.csv')
+precip_df = pandas.DataFrame.from_csv('/home/jgodwin/python/gefs-plots/precip.csv')
 season = 'warm'
 
 # convert the valid times into local times
@@ -51,10 +76,51 @@ for ix,i in enumerate(max_temp_df.index):
 
 highs = max_temp_df.groupby(lambda row: row.date()).max()
 lows = min_temp_df.groupby(lambda row: row.date()).min()
+precip = precip_df.groupby(lambda row: row.date()).sum()
 
 # plot forecasts
 plotter(highs,'High Temperature','highs.png',season)
 plotter(lows,'Low Temperature','lows.png',season)
+precip_plotter(precip,'Run-Accumulated Precipitation','precip.png')
+
+# get number of members containing precipitation
+precip_members = numpy.zeros(17)
+for i in range(numpy.shape(precip)[0]):
+    precip_members[i] = numpy.shape((numpy.where(numpy.array(precip)[i,:]>0)))[1] / 20.0
+
+# create number of members plot
+plt.clf()
+
+fig = plt.figure()
+
+ax = fig.add_subplot(1,1,1)
+ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
+ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%H'))
+
+valid_dates = [datetime.datetime.strptime(x,'%m/%d/%Y') for x in sorted(set(dates))]
+
+plt.bar(valid_dates,precip_members,width=0.5,align='center')
+plt.grid()
+
+# add ensmble mean values to top of bars
+rects = ax.patches
+labels = ['%.02f' % x for x in numpy.nanmean(numpy.array(precip),axis=1)]
+for rect,label in zip(rects,labels):
+    height = rect.get_height()
+    ax.text(rect.get_x() + rect.get_width()/2, height + 0.01, label, ha='center', va='bottom',size='smaller')
+
+# x axis
+plt.xticks(rotation=90)
+plt.xlabel('Date/Time (Local)')
+ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %b-%d'))
+
+# y axis and title
+plt.ylabel('Percent of Members')
+vals = ax.get_yticks()
+ax.set_yticklabels(['{:.0f}%'.format(x*100) for x in vals])
+plt.title('GEFS Members Indicating Precipitation')
+plt.savefig('precip_percent.png',bbox_inches='tight')
 
 ##### vv THIS PART STILL UNDER CONSTRUCTION vv #######
 
