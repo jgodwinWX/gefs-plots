@@ -109,8 +109,6 @@ for filename in sorted(os.listdir(directory)):
 
     precip[int(pert)][int(hour)] = precip_in[grblat,grblon]
 
-    grbs.close()
-
 # compute ensemble mean at each forecast hour
 max_ensmean = [0.0] * 65
 min_ensmean = [0.0] * 65
