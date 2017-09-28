@@ -71,7 +71,7 @@ for i in {0..384..6}
                     fcstHour="0${i}"
                 fi
                 #perl get_inv.pl "${url}.idx" | grep ":TMAX:" \
-                perl get_inv.pl "${url}.idx" | grep -E ":(TMAX|TMIN|APCP)" | \
+                perl get_inv.pl "${url}.idx" | grep -E ":(TMAX|TMIN|APCP|CSNOW|CICEP|CFRZR|CRAIN)" | \
                 perl get_grib.pl "${url}" $GRIBDIR/grib_gefs_"$YEAR""$MONTH""$DATE"_"$RUN"_"$fcstHour"_"$pert"
             fi
         done   

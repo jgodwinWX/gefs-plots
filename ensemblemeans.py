@@ -55,10 +55,18 @@ directory = '/home/jgodwin/python/gefs-plots/grib/'
 max_temp = np.empty([20,65])
 min_temp = np.empty([20,65])
 precip = np.empty([20,65])
+snow = np.empty([20,65])
+sleet = np.empty([20,65])
+fzra = np.empty([20,65])
+rain = np.empty([20,65])
 
 min_temp[:,:] = np.NAN
 max_temp[:,:] = np.NAN
 precip[:,:] = np.NAN
+snow[:,:] = np.NAN
+sleet[:,:] = np.NAN
+fzra[:,:] = np.NAN
+rain[:,:] = np.NAN
 
 for filename in sorted(os.listdir(directory)):
     print filename
@@ -73,18 +81,30 @@ for filename in sorted(os.listdir(directory)):
         max_temp[int(pert)][int(hour)] = float('nan')
         min_temp[int(pert)][int(hour)] = float('nan')
         precip[int(pert)][int(hour)] = float('nan')
+        snow[int(pert)][int(hour)] = float('nan')
+        sleet[int(pert)][int(hour)] = float('nan')
+        fzra[int(pert)][int(hour)] = float('nan')
+        rain[int(pert)][int(hour)] = float('nan')
         continue
 
     # get the temperature data (Kelvin) and precipitation (kg/m^2 = mm)
     if '_000_' in filename:
         max_temp_k = grbs.select(name='2 metre temperature')[0].values
         precip_mm = np.zeros(np.shape(max_temp_k))
+        catsnow = np.zeros(np.shape(max_temp_k))
+        catsleet = np.zeros(np.shape(max_temp_k))
+        catfzra = np.zeros(np.shape(max_temp_k))
+        catrain = np.zeros(np.shape(max_temp_k))
         min_temp_k = max_temp_k
         lats,lons = grbs.select(name='2 metre temperature')[0].latlons()
     else:
         max_temp_k = grbs.select(name='Maximum temperature')[0].values
         min_temp_k = grbs.select(name='Minimum temperature')[0].values
         precip_mm = grbs.select(name='Total Precipitation')[0].values
+        catsnow = grbs.select(name='Categorical snow')[0].values
+        catsleet = grbs.select(name='Categorical ice pellets')[0].values
+        catfzra = grbs.select(name='Categorical freezing rain')[0].values
+        catrain = grbs.select(name='Categorical rain')[0].values
         lats,lons = grbs.select(name='Maximum temperature')[0].latlons()
 
     # convert to Fahrenheit and inches because 'Murica
@@ -108,16 +128,29 @@ for filename in sorted(os.listdir(directory)):
         min_temp[int(pert)][int(hour)] = min_temp_f[grblat,grblon]
 
     precip[int(pert)][int(hour)] = precip_in[grblat,grblon]
+    snow[int(pert)][int(hour)] = catsnow[grblat,grblon]
+    sleet[int(pert)][int(hour)] = catsleet[grblat,grblon]
+    fzra[int(pert)][int(hour)] = catfzra[grblat,grblon]
+    rain[int(pert)][int(hour)] = catrain[grblat,grblon]
 
 # compute ensemble mean at each forecast hour
 max_ensmean = [0.0] * 65
 min_ensmean = [0.0] * 65
 precip_ensmean = [0.0] * 65
+snowmems = np.array([0.0] * 65)
+sleetmems = np.array([0.0] * 65)
+fzramems = np.array([0.0] * 65)
+rainmems = np.array([0.0] * 65)
 for i in range(0,65):
     max_ensmean[i] = np.nanmean(max_temp[:,i])
     min_ensmean[i] = np.nanmean(min_temp[:,i])
     precip_ensmean[i] = np.nanmean(precip[:,i])
+    snowmems[i] = np.sum(snow[:,i]) / 20.0
+    sleetmems[i] = np.sum(sleet[:,i]) / 20.0
+    fzramems[i] = np.sum(fzra[:,i]) / 20.0
+    rainmems[i] = np.sum(rain[:,i]) / 20.0
 
+### ENSEMBLE MEAN PLOTS ###
 # create ensemble mean plot
 vtimes = validTimes(str(grbs.message(1).dataDate),str(grbs.message(1).dataTime))
 plt.clf()
@@ -169,6 +202,29 @@ plt.ylabel('Precipitation (inches)')
 plt.title('GEFS Ensemble Mean Precipitation')
 plt.legend(loc='upper left')
 plt.savefig('ensmean_precip.png',bbox_inches='tight')
+
+### PRECIPITATION TYPE STACKED BARS ###
+plt.clf()
+fig = plt.figure()
+ax = fig.add_subplot(1,1,1)
+plt.bar(vtimes,snowmems,width=0.25,color='b',label='Snow')
+plt.bar(vtimes,sleetmems,width=0.25,color='y',label='Sleet',bottom=snowmems)
+plt.bar(vtimes,fzramems,width=0.25,color='r',label='Freezing Rain',bottom=snowmems+sleetmems)
+plt.bar(vtimes,rainmems,width=0.25,color='g',label='Liquid Rain',bottom=snowmems+sleetmems+fzramems)
+
+# aesthetics
+plt.grid()
+plt.xticks(rotation=90)
+plt.xlabel('Date/Time (UTC)')
+plt.xlim([np.min(vtimes),np.max(vtimes)])
+ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
+ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%H'))
+plt.ylabel('Percent of Members')
+vals = ax.get_yticks()
+ax.set_yticklabels(['{:.0f}%'.format(x*100) for x in vals])
+plt.title('GEFS Categorical Precipitation Type')
+plt.legend(loc='upper right',fontsize='x-small')
+plt.savefig('ptype.png',bbox_inches='tight')
 
 max_df.to_csv('/home/jgodwin/python/gefs-plots/maxtemps.csv')
 min_df.to_csv('/home/jgodwin/python/gefs-plots/mintemps.csv')
