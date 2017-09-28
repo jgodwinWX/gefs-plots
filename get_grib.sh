@@ -76,3 +76,6 @@ for i in {0..384..6}
             fi
         done   
     done
+
+python /home/jgodwin/python/gefs-plots/ensemblemeans.py >& ensemblemeans.out
+python /home/jgodwin/python/gefs-plots/htmlbuilder.py >& htmlbuilder.out

@@ -43,8 +43,6 @@ def precip_plotter(dataset,namestr,savestr):
     fig = plt.figure()
 
     ax = fig.add_subplot(1,1,1)
-    ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%H'))
 
     plt.plot(numpy.cumsum(dataset))
     plt.grid()
@@ -57,6 +55,32 @@ def precip_plotter(dataset,namestr,savestr):
 
     # y axis and title
     plt.ylabel('Precipitation (inches)')
+    plt.title('GEFS Ensemble Daily %s' % namestr)
+    plt.savefig(savestr,bbox_inches='tight')
+
+def box_and_whisker(dataset,valid_dates,datatype,unitstr,namestr,savestr):
+    plt.clf()
+
+    fig = plt.figure()
+
+    ax = fig.add_subplot(1,1,1)
+
+    # reformat the date labels
+    valid_dates = [datetime.datetime.strftime(x,'%a %b-%d') for x in valid_dates]
+
+    plt.boxplot(numpy.transpose(numpy.array(dataset)),whis='range',labels=valid_dates)
+    plt.grid()
+
+    # x axis
+    plt.xticks(rotation=90)
+    plt.xlabel('Date')
+
+    # set the y limits for temperatures
+    if 'Temperature' in namestr:
+        plt.ylim([30,100])
+
+    # y axis and title
+    plt.ylabel('%s (%s)' % (datatype,unitstr))
     plt.title('GEFS Ensemble Daily %s' % namestr)
     plt.savefig(savestr,bbox_inches='tight')
 
@@ -94,8 +118,6 @@ plt.clf()
 fig = plt.figure()
 
 ax = fig.add_subplot(1,1,1)
-ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
-ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%H'))
 
 valid_dates = [datetime.datetime.strptime(x,'%m/%d/%Y') for x in sorted(set(dates))]
 
@@ -121,6 +143,11 @@ vals = ax.get_yticks()
 ax.set_yticklabels(['{:.0f}%'.format(x*100) for x in vals])
 plt.title('GEFS Members Indicating Precipitation')
 plt.savefig('precip_percent.png',bbox_inches='tight')
+
+# create box and whisker plots
+box_and_whisker(highs,valid_dates,'Temperature','degrees Fahrenheit','High Temperature','box_highs.png')
+box_and_whisker(lows,valid_dates,'Temperature','degrees Fahrenheit','Low Temperature','box_lows.png')
+box_and_whisker(precip,valid_dates,'Precipitation','inches','Accumulated Precipitation','box_precip.png')
 
 ##### vv THIS PART STILL UNDER CONSTRUCTION vv #######
 
