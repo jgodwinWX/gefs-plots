@@ -36,6 +36,10 @@ Summary of included files:
         can see what it looks like). Finally, the script creates a few CSVs that are eventually 
         read by htmlbuilder.py. These should be pretty self-explanatory. :)
 
+    3. ptype.png: stacked bar plot of the categorical precipitation type. Uses the number of
+        members with the categorical precipitation type flag (snow, freezing rain, sleet, or
+        liquid rain) set to 1.
+
 -htmlbuilder.py: First off, this does not build any (meaningful) HTML yet. It's still a work in
     progress! For now, it creates some more detailed ensemble plots including plumes and box and
     whisker plots.
