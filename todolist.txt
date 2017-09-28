@@ -1,8 +1,7 @@
 This is my to-do list for this repository. Message me with other ideas!
 
-1. Box and whisker plots
-2. Complete webpage functionality.
-3. Climatology comparisons.
+1. Complete webpage functionality.
+2. Climatology comparisons.
 
 Requests:
 
@@ -12,3 +11,4 @@ Completed:
 
 1. Temperature (including MaxT and MinT).
 2. Precipitation (completed 09/27/2017).
+3. Box and whisker plots (completed 09/27/2017).
