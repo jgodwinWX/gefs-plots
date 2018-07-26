@@ -66,7 +66,7 @@ def box_and_whisker(dataset,valid_dates,datatype,unitstr,namestr,savestr):
     ax = fig.add_subplot(1,1,1)
 
     # reformat the date labels
-    valid_dates = [datetime.datetime.strftime(x,'%a %b-%d') for x in valid_dates]
+    valid_dates = [datetime.datetime.strftime(x,'%a %b-%d') for x in sorted(valid_dates)]
 
     plt.boxplot(numpy.transpose(numpy.array(dataset)),whis='range',labels=valid_dates)
     plt.grid()
@@ -77,7 +77,7 @@ def box_and_whisker(dataset,valid_dates,datatype,unitstr,namestr,savestr):
 
     # set the y limits for temperatures
     if 'Temperature' in namestr:
-        plt.ylim([30,100])
+        plt.ylim([0,80])
 
     # y axis and title
     plt.ylabel('%s (%s)' % (datatype,unitstr))
@@ -88,7 +88,7 @@ def box_and_whisker(dataset,valid_dates,datatype,unitstr,namestr,savestr):
 max_temp_df = pandas.DataFrame.from_csv('/home/jgodwin/python/gefs-plots/maxtemps.csv')
 min_temp_df = pandas.DataFrame.from_csv('/home/jgodwin/python/gefs-plots/mintemps.csv')
 precip_df = pandas.DataFrame.from_csv('/home/jgodwin/python/gefs-plots/precip.csv')
-season = 'warm'
+season = 'cold'
 
 # convert the valid times into local times
 max_temp_df.index = pandas.to_datetime(max_temp_df.index)

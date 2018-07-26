@@ -50,7 +50,7 @@ mylon = -97.038056
 #mylat = 34.33
 #mylon = -95.861667
 
-directory = '/home/jgodwin/python/gefs-plots/grib/'
+directory = '/home/jgodwin/Documents/python/python/gefs-plots/grib/'
 
 max_temp = np.empty([20,65])
 min_temp = np.empty([20,65])

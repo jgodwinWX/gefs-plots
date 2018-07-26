@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 # user settings
-GRIBDIR=/home/jgodwin/python/gefs-plots/grib
+GRIBDIR=/home/jgodwin/Documents/python/python/gefs-plots/grib
+PYDIR=/home/jgodwin/Documents/python/python/gefs-plots
 
 # clean out the old grib data
 rm $GRIBDIR/*
@@ -52,7 +53,6 @@ for i in {0..384..6}
             echo $url
             if [ $i -eq 0 ]
             then
-                echo "running get_inv.pl"
                 if [ $i -lt 10 ]
                 then
                     fcstHour="00${i}"
@@ -60,8 +60,11 @@ for i in {0..384..6}
                 then
                     fcstHour="0${i}"
                 fi
+                echo "running get_inv.pl"
+                echo $GRIBDIR/grib_gefs_"$YEAR""$MONTH""$DATE"_"$RUN"_"$fcstHour"_"$pert"
                 perl get_inv.pl "${url}.idx" | grep ":TMP:" | grep ":2 m above ground" | \
                 perl get_grib.pl "${url}" $GRIBDIR/grib_gefs_"$YEAR""$MONTH""$DATE"_"$RUN"_"$fcstHour"_"$pert"
+                echo "foo"
             else
                 if [ $i -lt 10 ]
                 then
@@ -70,12 +73,12 @@ for i in {0..384..6}
                 then
                     fcstHour="0${i}"
                 fi
-                #perl get_inv.pl "${url}.idx" | grep ":TMAX:" \
+                echo "${url}.idx" | grep -E ":(TMAX|TMIN|APCP|CSNOW|CICEP|CFRZR|CRAIN)" | 
                 perl get_inv.pl "${url}.idx" | grep -E ":(TMAX|TMIN|APCP|CSNOW|CICEP|CFRZR|CRAIN)" | \
                 perl get_grib.pl "${url}" $GRIBDIR/grib_gefs_"$YEAR""$MONTH""$DATE"_"$RUN"_"$fcstHour"_"$pert"
             fi
         done   
     done
 
-python /home/jgodwin/python/gefs-plots/ensemblemeans.py >& ensemblemeans.out
-python /home/jgodwin/python/gefs-plots/htmlbuilder.py >& htmlbuilder.out
+python $PYDIR/ensemblemeans.py >& $PYDIR/ensemblemeans.out
+python $PYDIR/htmlbuilder.py >& $PYDIR/htmlbuilder.out
