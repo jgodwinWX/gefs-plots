@@ -77,7 +77,7 @@ def box_and_whisker(dataset,valid_dates,datatype,unitstr,namestr,savestr):
 
     # set the y limits for temperatures
     if 'Temperature' in namestr:
-        plt.ylim([0,80])
+        plt.ylim([0,110])
 
     # y axis and title
     plt.ylabel('%s (%s)' % (datatype,unitstr))
@@ -85,10 +85,10 @@ def box_and_whisker(dataset,valid_dates,datatype,unitstr,namestr,savestr):
     plt.savefig(savestr,bbox_inches='tight')
 
 # open the csv files
-max_temp_df = pandas.DataFrame.from_csv('/home/jgodwin/python/gefs-plots/maxtemps.csv')
-min_temp_df = pandas.DataFrame.from_csv('/home/jgodwin/python/gefs-plots/mintemps.csv')
-precip_df = pandas.DataFrame.from_csv('/home/jgodwin/python/gefs-plots/precip.csv')
-season = 'cold'
+max_temp_df = pandas.DataFrame.from_csv('/home/jgodwin/Documents/python/python/gefs-plots/maxtemps.csv')
+min_temp_df = pandas.DataFrame.from_csv('/home/jgodwin/Documents/python/python/gefs-plots/mintemps.csv')
+precip_df = pandas.DataFrame.from_csv('/home/jgodwin/Documents/python/python/gefs-plots/precip.csv')
+season = 'warm'
 
 # convert the valid times into local times
 max_temp_df.index = pandas.to_datetime(max_temp_df.index)
