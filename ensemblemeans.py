@@ -28,6 +28,16 @@ def validTimes(initdate,inithour):
 def kelvinToFahrenheit(temperature):
     return temperature * (9.0 / 5.0) - 459.67
 
+def kelvinToCelsius(temperature):
+    return temperature - 272.15
+
+def celsiusToFahrenheit(temperature):
+    return 1.8 * temperature + 32.0
+
+def dewpointCalc(rh,tmp):
+    es = 6.11 * 10**((7.5 * tmp)/(237.3+tmp))
+    return (273.3 * np.log((es*rh)/611)) / (7.5 * np.log(10) - np.log((es*rh)/611))
+
 def mmToInches(precipitation):
     return precipitation * 0.0393701
 
@@ -44,16 +54,18 @@ locname = 'Dallas/Fort Worth, TX'
 testmode = False
 
 # create empty arrays (20 perturbations, 65 valid times)
-max_temp = np.empty([20,65])
-min_temp = np.empty([20,65])
-precip = np.empty([20,65])
-snow = np.empty([20,65])
-sleet = np.empty([20,65])
-fzra = np.empty([20,65])
-rain = np.empty([20,65])
+max_temp = np.empty([20,65])    # maximum temperature
+min_temp = np.empty([20,65])    # minimum temperature
+dpt = np.empty([20,65])         # dewpoint
+precip = np.empty([20,65])      # precipitation amount
+snow = np.empty([20,65])        # categorical snow flag
+sleet = np.empty([20,65])       # categorical sleet flag
+fzra = np.empty([20,65])        # categorical freezing rain flag
+rain = np.empty([20,65])        # categorical liquid rain flag
 
 min_temp[:,:] = np.NAN
 max_temp[:,:] = np.NAN
+dpt[:,:] = np.NAN
 precip[:,:] = np.NAN
 snow[:,:] = np.NAN
 sleet[:,:] = np.NAN
@@ -72,6 +84,7 @@ for filename in sorted(os.listdir(directory)):
     if os.stat(directory + filename).st_size < 40000:
         max_temp[int(pert)][int(hour)] = float('nan')
         min_temp[int(pert)][int(hour)] = float('nan')
+        dpt[int(pert)][int(hour)] = float('nan')
         precip[int(pert)][int(hour)] = float('nan')
         snow[int(pert)][int(hour)] = float('nan')
         sleet[int(pert)][int(hour)] = float('nan')
@@ -82,6 +95,8 @@ for filename in sorted(os.listdir(directory)):
     # get the temperature data (Kelvin) and precipitation (kg/m^2 = mm)
     if '_000_' in filename:
         max_temp_k = grbs.select(name='2 metre temperature')[0].values
+        temp_k = max_temp_k
+        relh_pct = grbs.select(name='2 metre relative humidity')[0].values
         precip_mm = np.zeros(np.shape(max_temp_k))
         catsnow = np.zeros(np.shape(max_temp_k))
         catsleet = np.zeros(np.shape(max_temp_k))
@@ -91,7 +106,9 @@ for filename in sorted(os.listdir(directory)):
         lats,lons = grbs.select(name='2 metre temperature')[0].latlons()
     else:
         max_temp_k = grbs.select(name='Maximum temperature')[0].values
+        relh_pct = grbs.select(name='2 metre relative humidity')[0].values
         min_temp_k = grbs.select(name='Minimum temperature')[0].values
+        temp_k = grbs.select(name='2 metre temperature')[0].values
         precip_mm = grbs.select(name='Total Precipitation')[0].values
         catsnow = grbs.select(name='Categorical snow')[0].values
         catsleet = grbs.select(name='Categorical ice pellets')[0].values
@@ -103,6 +120,13 @@ for filename in sorted(os.listdir(directory)):
     max_temp_f = kelvinToFahrenheit(max_temp_k)
     min_temp_f = kelvinToFahrenheit(min_temp_k)
     precip_in = mmToInches(precip_mm)
+
+    # convert temperature to Celsius for use in the dewpoint formula
+    temp_c = kelvinToCelsius(temp_k)
+
+    # compute dewpoint from temperature and relative humidity
+    dpt_c = dewpointCalc(relh_pct,temp_c)
+    dpt_f = celsiusToFahrenheit(dpt_c)
 
     # get data at mylat and mylon
     grblat = np.where(lats==round(mylat))[0][0]
@@ -119,6 +143,11 @@ for filename in sorted(os.listdir(directory)):
     else:
         min_temp[int(pert)][int(hour)] = min_temp_f[grblat,grblon]
 
+    if dpt_f[grblat,grblon] > 100.0 or dpt_f[grblat,grblon] < -50.0:
+        dpt[int(pert)][int(hour)] = float('nan')
+    else:
+        dpt[int(pert)][int(pert)] = dpt_f[grblat,grblon]
+
     precip[int(pert)][int(hour)] = precip_in[grblat,grblon]
     snow[int(pert)][int(hour)] = catsnow[grblat,grblon]
     sleet[int(pert)][int(hour)] = catsleet[grblat,grblon]
@@ -132,6 +161,7 @@ for filename in sorted(os.listdir(directory)):
 # compute ensemble mean at each forecast hour
 max_ensmean = [0.0] * 65
 min_ensmean = [0.0] * 65
+dpt_ensmean = [0.0] * 65
 precip_ensmean = [0.0] * 65
 snowmems = np.array([0.0] * 65)
 sleetmems = np.array([0.0] * 65)
@@ -140,6 +170,7 @@ rainmems = np.array([0.0] * 65)
 for i in range(0,65):
     max_ensmean[i] = np.nanmean(max_temp[:,i])
     min_ensmean[i] = np.nanmean(min_temp[:,i])
+    dpt_ensmean[i] = np.nanmean(dpt[:,i])
     precip_ensmean[i] = np.nanmean(precip[:,i])
     snowmems[i] = np.sum(snow[:,i]) / 20.0
     sleetmems[i] = np.sum(sleet[:,i]) / 20.0
@@ -177,6 +208,8 @@ min_df = pandas.DataFrame(np.transpose(min_temp),index=vtimes,columns=column_hea
 min_df.index_name = 'ValidTime'
 precip_df = pandas.DataFrame(np.transpose(precip),index=vtimes,columns=column_headers)
 precip_df.index.name = 'ValidTime'
+dpt_df = pandas.DataFrame(np.transpose(dpt),index=vtimes,columns=column_headers)
+dpt_df.index.name = 'ValidTime'
 
 # create the precipitation mean plot
 plt.clf()
@@ -198,6 +231,27 @@ plt.ylabel('Precipitation (inches)',fontsize=14)
 plt.title('GEFS Ensemble Mean Precipitation for  %s' % locname,fontsize=16)
 plt.legend(loc='upper left',fontsize=12)
 plt.savefig('%s/ensmean_precip.png' % savedir,bbox_inches='tight')
+
+### DEWPOINT ###
+plt.clf()
+fig = plt.figure(figsize=(12,8))
+ax = fig.add_subplot(1,1,1)
+plt.plot(vtimes,dpt_ensmean,color='g',label='Dewpoint')
+plt.grid()
+
+# x axis settings
+plt.xticks(rotation=90)
+plt.xlabel('Date/Time (UTC)',fontsize=14)
+plt.xlim([np.min(vtimes),np.max(vtimes)])
+ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
+ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%H'))
+
+# y axis and title
+plt.ylim([0,100])
+plt.ylabel('Dewpoint Temperature (F)',fontsize=14)
+plt.title('GEFS Ensemble Mean 6-Hourly Dewpoint for %s' % locname,fontsize=16)
+plt.legend(loc='upper right',fontsize=12)
+plt.savefig('%s/ensmean_dwpt.png' % savedir,bbox_inches='tight')
 
 ### PRECIPITATION TYPE STACKED BARS ###
 plt.clf()
@@ -226,3 +280,4 @@ plt.savefig('%s/ptype.png' % savedir,bbox_inches='tight')
 max_df.to_csv('%s/maxtemps.csv' % savedir)
 min_df.to_csv('%s/mintemps.csv' % savedir)
 precip_df.to_csv('%s/precip.csv' % savedir)
+dpt_df.to_csv('%s/dewpoint.csv' % savedir)
