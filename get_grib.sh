@@ -49,7 +49,7 @@ for i in {0..384..6}
             pert="0${j}"
             pert="${pert: -2}"
             # download the grib files
-            url="http://www.ftp.ncep.noaa.gov/data/nccf/com/gens/prod/gefs."$YEAR""$MONTH""$DATE"/"$RUN"/pgrb2/gep"$pert".t"$RUN"z.pgrb2f"$fcstHour""
+            url="https://www.ftp.ncep.noaa.gov/data/nccf/com/gens/prod/gefs."$YEAR""$MONTH""$DATE"/"$RUN"/pgrb2/gep"$pert".t"$RUN"z.pgrb2f"$fcstHour""
             echo $url
             if [ $i -eq 0 ]
             then
@@ -62,8 +62,8 @@ for i in {0..384..6}
                 fi
                 echo "running get_inv.pl"
                 echo $GRIBDIR/grib_gefs_"$YEAR""$MONTH""$DATE"_"$RUN"_"$fcstHour"_"$pert"
-                perl get_inv.pl "${url}.idx" | grep ":TMP:" | grep ":2 m above ground" | \
-                perl get_grib.pl "${url}" $GRIBDIR/grib_gefs_"$YEAR""$MONTH""$DATE"_"$RUN"_"$fcstHour"_"$pert"
+                perl $PYDIR/get_inv.pl "${url}.idx" | grep ":TMP:" | grep ":2 m above ground" | \
+                perl $PYDIR/get_grib.pl "${url}" $GRIBDIR/grib_gefs_"$YEAR""$MONTH""$DATE"_"$RUN"_"$fcstHour"_"$pert"
                 echo "foo"
             else
                 if [ $i -lt 10 ]
@@ -74,11 +74,12 @@ for i in {0..384..6}
                     fcstHour="0${i}"
                 fi
                 echo "${url}.idx" | grep -E ":(TMAX|TMIN|APCP|CSNOW|CICEP|CFRZR|CRAIN)" | 
-                perl get_inv.pl "${url}.idx" | grep -E ":(TMAX|TMIN|APCP|CSNOW|CICEP|CFRZR|CRAIN)" | \
-                perl get_grib.pl "${url}" $GRIBDIR/grib_gefs_"$YEAR""$MONTH""$DATE"_"$RUN"_"$fcstHour"_"$pert"
+                perl $PYDIR/get_inv.pl "${url}.idx" | grep -E ":(TMAX|TMIN|APCP|CSNOW|CICEP|CFRZR|CRAIN)" | \
+                perl $PYDIR/get_grib.pl "${url}" $GRIBDIR/grib_gefs_"$YEAR""$MONTH""$DATE"_"$RUN"_"$fcstHour"_"$pert"
             fi
         done   
     done
 
 python $PYDIR/ensemblemeans.py >& $PYDIR/ensemblemeans.out
 python $PYDIR/htmlbuilder.py >& $PYDIR/htmlbuilder.out
+scp $PYDIR/*.png jgodwin@jasonsweathercenter.com:/var/www/html/gefs/.

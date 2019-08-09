@@ -1,4 +1,6 @@
 import datetime
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
@@ -29,29 +31,19 @@ def kelvinToFahrenheit(temperature):
 def mmToInches(precipitation):
     return precipitation * 0.0393701
 
+# set save directory
+savedir = '/home/jgodwin/Documents/python/python/gefs-plots'
+# directory containing GRIB files
+directory = '/home/jgodwin/Documents/python/python/gefs-plots/grib/'
+
 # set target latitude and longitude
 # DFW
 mylat = 32.896944
 mylon = -97.038056
+locname = 'Dallas/Fort Worth, TX'
+testmode = False
 
-# Lincoln, NE
-#mylat = 40.810556
-#mylon = -96.680278
-
-# Baton Rouge, LA
-#mylat = 30.45
-#mylon = -91.14
-
-# Laramie, WY
-#mylat = 41.316667
-#mylon = -105.583333
-
-# McGee Creek SP, OK
-#mylat = 34.33
-#mylon = -95.861667
-
-directory = '/home/jgodwin/Documents/python/python/gefs-plots/grib/'
-
+# create empty arrays (20 perturbations, 65 valid times)
 max_temp = np.empty([20,65])
 min_temp = np.empty([20,65])
 precip = np.empty([20,65])
@@ -67,7 +59,7 @@ snow[:,:] = np.NAN
 sleet[:,:] = np.NAN
 fzra[:,:] = np.NAN
 rain[:,:] = np.NAN
-
+ix = 0
 for filename in sorted(os.listdir(directory)):
     print filename
     pert = float(filename[-2:]) - 1.0
@@ -132,6 +124,10 @@ for filename in sorted(os.listdir(directory)):
     sleet[int(pert)][int(hour)] = catsleet[grblat,grblon]
     fzra[int(pert)][int(hour)] = catfzra[grblat,grblon]
     rain[int(pert)][int(hour)] = catrain[grblat,grblon]
+    
+    ix += 1
+    if testmode and ix >= 20 * 4:
+        break
 
 # compute ensemble mean at each forecast hour
 max_ensmean = [0.0] * 65
@@ -154,7 +150,7 @@ for i in range(0,65):
 # create ensemble mean plot
 vtimes = validTimes(str(grbs.message(1).dataDate),str(grbs.message(1).dataTime))
 plt.clf()
-fig = plt.figure()
+fig = plt.figure(figsize=(12,8))
 ax = fig.add_subplot(1,1,1)
 plt.plot(vtimes,max_ensmean,color='r',label='Max Temperature')
 plt.plot(vtimes,min_ensmean,color='b',label='Min Temperature')
@@ -162,16 +158,16 @@ plt.grid()
 
 # x axis settings
 plt.xticks(rotation=90)
-plt.xlabel('Date/Time (UTC)')
+plt.xlabel('Date/Time (UTC)',fontsize=14)
 plt.xlim([np.min(vtimes),np.max(vtimes)])
 ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%H'))
 
 # y axis and title
-plt.ylabel('Temperature (degrees Fahrenheit)')
-plt.title('GEFS Ensemble Mean 6-Hourly Temperature')
-plt.legend(loc='upper right')
-plt.savefig('ensmean_temp.png',bbox_inches='tight')
+plt.ylabel('Temperature (degrees Fahrenheit)',fontsize=14)
+plt.title('GEFS Ensemble Mean 6-Hourly Temperature for %s' % locname,fontsize=16)
+plt.legend(loc='upper right',fontsize=12)
+plt.savefig('%s/ensmean_temp.png' % savedir,bbox_inches='tight')
 
 # write data out for each ensemble member
 column_headers = [str('gep' + str(x)) for x in range(1,21)]
@@ -184,7 +180,7 @@ precip_df.index.name = 'ValidTime'
 
 # create the precipitation mean plot
 plt.clf()
-fig = plt.figure()
+fig = plt.figure(figsize=(12,8))
 ax = fig.add_subplot(1,1,1)
 plt.bar(vtimes,precip_ensmean,width=0.25,color='g',align='center',label='6-Hour Precipitation')
 plt.plot(vtimes,np.cumsum(precip_ensmean),color='b',label='Run-Accumulated Precipitation')
@@ -192,20 +188,20 @@ plt.grid()
 
 # x axis settings
 plt.xticks(rotation=90)
-plt.xlabel('Date/Time (UTC)')
+plt.xlabel('Date/Time (UTC)',fontsize=14)
 plt.xlim([np.min(vtimes),np.max(vtimes)])
 ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%H'))
 
 # y axis and title
-plt.ylabel('Precipitation (inches)')
-plt.title('GEFS Ensemble Mean Precipitation')
-plt.legend(loc='upper left')
-plt.savefig('ensmean_precip.png',bbox_inches='tight')
+plt.ylabel('Precipitation (inches)',fontsize=14)
+plt.title('GEFS Ensemble Mean Precipitation for  %s' % locname,fontsize=16)
+plt.legend(loc='upper left',fontsize=12)
+plt.savefig('%s/ensmean_precip.png' % savedir,bbox_inches='tight')
 
 ### PRECIPITATION TYPE STACKED BARS ###
 plt.clf()
-fig = plt.figure()
+fig = plt.figure(figsize=(12,8))
 ax = fig.add_subplot(1,1,1)
 plt.bar(vtimes,snowmems,width=0.25,color='b',label='Snow',align='center')
 plt.bar(vtimes,sleetmems,width=0.25,color='y',label='Sleet',align='center',bottom=snowmems)
@@ -215,17 +211,18 @@ plt.bar(vtimes,rainmems,width=0.25,color='g',label='Liquid Rain',align='center',
 # aesthetics
 plt.grid()
 plt.xticks(rotation=90)
-plt.xlabel('Date/Time (UTC)')
+plt.xlabel('Date/Time (UTC)',fontsize=14)
 plt.xlim([np.min(vtimes),np.max(vtimes)])
 ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%H'))
-plt.ylabel('Percent of Members')
+plt.ylim([0,1])
+plt.ylabel('Percent of Members',fontsize=14)
 vals = ax.get_yticks()
 ax.set_yticklabels(['{:.0f}%'.format(x*100) for x in vals])
-plt.title('GEFS Categorical Precipitation Type')
-plt.legend(loc='upper right',fontsize='x-small')
-plt.savefig('ptype.png',bbox_inches='tight')
+plt.title('GEFS Categorical Precipitation Type for %s' % locname,fontsize=16)
+plt.legend(loc='upper right',fontsize='12')
+plt.savefig('%s/ptype.png' % savedir,bbox_inches='tight')
 
-max_df.to_csv('/home/jgodwin/Documents/python/python/gefs-plots/maxtemps.csv')
-min_df.to_csv('/home/jgodwin/Documents/python/python/gefs-plots/mintemps.csv')
-precip_df.to_csv('/home/jgodwin/Documents/python/python/gefs-plots/precip.csv')
+max_df.to_csv('%s/maxtemps.csv' % savedir)
+min_df.to_csv('%s/mintemps.csv' % savedir)
+precip_df.to_csv('%s/precip.csv' % savedir)
