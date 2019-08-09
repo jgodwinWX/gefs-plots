@@ -36,7 +36,7 @@ def celsiusToFahrenheit(temperature):
 
 def dewpointCalc(rh,tmp):
     es = 6.11 * 10**((7.5 * tmp)/(237.3+tmp))
-    return (273.3 * np.log((es*rh)/611)) / (7.5 * np.log(10) - np.log((es*rh)/611))
+    return (237.3 * np.log((es*rh)/611)) / (7.5 * np.log(10) - np.log((es*rh)/611))
 
 def mmToInches(precipitation):
     return precipitation * 0.0393701
