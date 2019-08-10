@@ -99,16 +99,19 @@ def box_and_whisker(dataset,valid_dates,datatype,unitstr,namestr,savestr,inittim
 
 # open the csv files
 savedir = '/home/jgodwin/Documents/python/python/gefs-plots'
-max_temp_df = pandas.DataFrame.from_csv('%s/maxtemps.csv' % savedir)
-min_temp_df = pandas.DataFrame.from_csv('%s/mintemps.csv' % savedir)
-dpt_df = pandas.DataFrame.from_csv('%s/dewpoint.csv' % savedir)
-precip_df = pandas.DataFrame.from_csv('%s/precip.csv' % savedir)
+max_temp_df = pandas.read_csv('%s/maxtemps.csv' % savedir,index_col=0)
+min_temp_df = pandas.read_csv('%s/mintemps.csv' % savedir,index_col=0)
+dpt_df = pandas.read_csv('%s/dewpoint.csv' % savedir,index_col=0)
+precip_df = pandas.read_csv('%s/precip.csv' % savedir,index_col=0)
 locname = 'Dallas/Fort Worth, TX'
 season = 'warm'
 utcoffset = 0
 
 # convert the valid times into local times
 max_temp_df.index = pandas.to_datetime(max_temp_df.index)
+min_temp_df.index = pandas.to_datetime(min_temp_df.index)
+dpt_df.index = pandas.to_datetime(dpt_df.index)
+precip_df.index = pandas.to_datetime(precip_df.index)
 localtimes = [0.0] * len(max_temp_df.index)
 dates = [0.0] * len(max_temp_df.index)
 for ix,i in enumerate(max_temp_df.index):
