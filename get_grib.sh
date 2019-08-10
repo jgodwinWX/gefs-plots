@@ -62,7 +62,8 @@ for i in {0..384..6}
                 fi
                 echo "running get_inv.pl"
                 echo $GRIBDIR/grib_gefs_"$YEAR""$MONTH""$DATE"_"$RUN"_"$fcstHour"_"$pert"
-                perl $PYDIR/get_inv.pl "${url}.idx" | grep ":TMP:" | grep ":2 m above ground" | \
+                #perl $PYDIR/get_inv.pl "${url}.idx" | grep ":TMP:" | grep ":2 m above ground" | \
+                perl $PYDIR/get_inv.pl "${url}.idx" | grep -E ":(TMP|RH)" | grep ":2 m above ground" | \
                 perl $PYDIR/get_grib.pl "${url}" $GRIBDIR/grib_gefs_"$YEAR""$MONTH""$DATE"_"$RUN"_"$fcstHour"_"$pert"
                 echo "foo"
             else
@@ -74,7 +75,7 @@ for i in {0..384..6}
                     fcstHour="0${i}"
                 fi
                 echo "${url}.idx" | grep -E ":(TMAX|TMIN|APCP|CSNOW|CICEP|CFRZR|CRAIN)" | 
-                perl $PYDIR/get_inv.pl "${url}.idx" | grep -E ":(TMAX|TMIN|APCP|CSNOW|CICEP|CFRZR|CRAIN)" | \
+                perl $PYDIR/get_inv.pl "${url}.idx" | grep -E ":(TMAX|TMIN|TMP|APCP|CSNOW|CICEP|CFRZR|CRAIN|RH)" | grep -E ":2 m above ground|surface" | \
                 perl $PYDIR/get_grib.pl "${url}" $GRIBDIR/grib_gefs_"$YEAR""$MONTH""$DATE"_"$RUN"_"$fcstHour"_"$pert"
             fi
         done   

@@ -21,7 +21,6 @@ __status__ = 'Production'
 
 # function for plotting ensemble members
 def plotter(dataset,namestr,savestr,season,inittime):
-    plt.clf()
     fig = plt.figure(figsize=(12,8))
     ax = fig.add_subplot(1,1,1)
     plt.plot(dataset)
@@ -50,10 +49,10 @@ def plotter(dataset,namestr,savestr,season,inittime):
         plt.yticks(numpy.arange(0,110,5))
     plt.title('GEFS Ensemble Daily %s (init: %s)' % (namestr,inittime),fontsize=16)
     plt.savefig(savestr,bbox_inches='tight')
+    plt.close(fig)
 
 # function for plotting precipitation in ensemble members
 def precip_plotter(dataset,namestr,savestr,inittime):
-    plt.clf()
     fig = plt.figure(figsize=(12,8))
     ax = fig.add_subplot(1,1,1)
     plt.plot(numpy.cumsum(dataset))
@@ -72,13 +71,13 @@ def precip_plotter(dataset,namestr,savestr,inittime):
     plt.ylabel('Precipitation (inches)',fontsize=14)
     plt.title('GEFS Ensemble Daily %s (init: %s)' % (namestr,inittime),fontsize=16)
     plt.savefig(savestr,bbox_inches='tight')
+    plt.close(fig)
 
 # box and whisker plot function
 def box_and_whisker(dataset,valid_dates,datatype,unitstr,namestr,savestr,inittime):
     # reformat the date labels
     valid_dates = [datetime.datetime.strftime(x,'%a %b-%d') for x in sorted(valid_dates)]
 
-    plt.clf()
     fig = plt.figure(figsize=(12,8))
     ax = fig.add_subplot(1,1,1)
     plt.boxplot(numpy.transpose(numpy.array(dataset)),whis='range',labels=valid_dates)
@@ -103,6 +102,7 @@ def box_and_whisker(dataset,valid_dates,datatype,unitstr,namestr,savestr,inittim
     plt.ylabel('%s (%s)' % (datatype,unitstr),fontsize=14)
     plt.title('GEFS Ensemble Daily %s (init: %s)' % (namestr,inittime),fontsize=16)
     plt.savefig(savestr,bbox_inches='tight')
+    plt.close(fig)
 
 ### USER EDIT SECTION ###
 savedir = '/home/jgodwin/Documents/python/python/gefs-plots'  # directory to save pngs
@@ -156,8 +156,7 @@ precip_members = numpy.zeros(17)
 for i in range(numpy.shape(precip)[0]):
     precip_members[i] = numpy.shape((numpy.where(numpy.array(precip)[i,:]>0)))[1] / 20.0
 
-# create number of members plot
-plt.clf()
+# actual plot routine
 fig = plt.figure(figsize=(12,8))
 ax = fig.add_subplot(1,1,1)
 plt.bar(valid_dates,precip_members,width=0.5,align='center')
@@ -187,6 +186,7 @@ ax.set_yticklabels(['{:.0f}%'.format(x*100) for x in vals])
 plt.title('GEFS Members Indicating Precipitation at %s (init: %s)' % (locname,inittime),\
     fontsize=16)
 plt.savefig('precip_percent.png',bbox_inches='tight')
+plt.close(fig)
 
 # create box and whisker plots
 box_and_whisker(highs,valid_dates_hi,'Temperature','degrees Fahrenheit','High Temperature at %s' % \

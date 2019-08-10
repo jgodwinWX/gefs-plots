@@ -36,7 +36,10 @@ Summary of included files:
         can see what it looks like). Finally, the script creates a few CSVs that are eventually 
         read by htmlbuilder.py. These should be pretty self-explanatory. :)
 
-    3. ptype.png: stacked bar plot of the categorical precipitation type. Uses the number of
+    3. ensmean_dwpt.png: show the 6-hourly GEFS ensemble mean dewpoint temperature during the
+        preceeding 6-hour period. Temperature units are in degrees Fahrenheit.
+
+    4. ptype.png: stacked bar plot of the categorical precipitation type. Uses the number of
         members with the categorical precipitation type flag (snow, freezing rain, sleet, or
         liquid rain) set to 1.
 
@@ -44,11 +47,13 @@ Summary of included files:
     progress! For now, it creates some more detailed ensemble plots including plumes and box and
     whisker plots.
 
-    1. highs.png: GEFS plume showing the daily (local time...you have to set the UTC offset
-        manually!) high temperatures from each ensemble. This is done by finding the maximum
-        value for each ensemble member during a 1-day period. So you'll see the daily max for
-        GEP01, GEP02, etc.
-    2. lows.png: same as above, but with low temperatures.
+    1. highs.png: GEFS plume showing the daily (00-24 UTC) high temperatures from each ensemble.
+        This is done by finding the maximum value for each ensemble member during a 1-day period. 
+        So you'll see the daily max for GEP01, GEP02, etc.
+
+    2. lows.png: same as above, but with low temperatures (uses daily min from each member).
+
+    3. dwpt.png: same as 1 and 2, but with dewpoint (uses daily mean from each member).
 
     3. precip.png: GEFS plume showing the day-over-day run-accumulated precipitation.
 
@@ -73,7 +78,9 @@ Summary of included files:
 
     6. box_lows.png: same as above, but with daily lows.
 
-    7. box_precip.png: same as above two, but with daily precipitation. This is probably the most
+    7. box_dwpt.png: same as 5 and 6, but with dewpoint.
+
+    8. box_precip.png: same as above two, but with daily precipitation. This is probably the most
         useful precipitation product. The boxes give you an idea of just how many members are
         really showing appreciable precipitation. 90% of memebers might show precip, but the box
         ranges from 0.00 to 0.02...not impressive.
