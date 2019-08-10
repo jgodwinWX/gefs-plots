@@ -139,7 +139,7 @@ elif max_temp_df.index[0].hour == 12:
 
 # plot forecasts
 plotter(highs,'High Temperature at %s' % locname,'%s/highs.png' % savedir,season)
-plotter(lows[0:-2],'Low Temperature at %s' % locname,'%s/lows.png' % savedir,season)
+plotter(lows,'Low Temperature at %s' % locname,'%s/lows.png' % savedir,season)
 plotter(dpts,'Mean Daily Dewpoint at %s' % locname,'%s/dwpt.png' % savedir,'dwpt')
 precip_plotter(precip,'Run-Total Precip. at %s' % locname,'%s/precip.png' % savedir)
 
