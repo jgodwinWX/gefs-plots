@@ -10,8 +10,7 @@ import pandas
 def utc_to_local(utc_dt,offset):
     return utc_dt + datetime.timedelta(hours=offset)
 
-def plotter(dataset,namestr,savestr,season):
-    inittime = datetime.datetime.strftime(dataset.index[0],'%m/%d %H') + '00 UTC'
+def plotter(dataset,namestr,savestr,season,inittime):
     plt.clf()
 
     fig = plt.figure(figsize=(12,8))
@@ -25,7 +24,7 @@ def plotter(dataset,namestr,savestr,season):
     plt.xticks(dataset.index,rotation=90)
     plt.xlabel('Date/Time (UTC)',fontsize=14)
     ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %b-%d %H'))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %b-%d'))
 
     # y axis and title
     plt.ylabel('Temperature (degrees Fahrenheit)',fontsize=14)
@@ -44,8 +43,7 @@ def plotter(dataset,namestr,savestr,season):
     plt.title('GEFS Ensemble Daily %s (init: %s)' % (namestr,inittime),fontsize=16)
     plt.savefig(savestr,bbox_inches='tight')
 
-def precip_plotter(dataset,namestr,savestr):
-    inittime = datetime.datetime.strftime(dataset.index[0],'%m/%d %H') + '00 UTC'
+def precip_plotter(dataset,namestr,savestr,inittime):
     plt.clf()
 
     fig = plt.figure(figsize=(12,8))
@@ -59,7 +57,7 @@ def precip_plotter(dataset,namestr,savestr):
     plt.xticks(dataset.index,rotation=90)
     plt.xlabel('Date/Time (UTC)',fontsize=14)
     ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %b-%d %H'))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %b-%d'))
 
     # y axis and title
     plt.ylim([0.0,4.0])
@@ -68,9 +66,7 @@ def precip_plotter(dataset,namestr,savestr):
     plt.title('GEFS Ensemble Daily %s (init: %s)' % (namestr,inittime),fontsize=16)
     plt.savefig(savestr,bbox_inches='tight')
 
-def box_and_whisker(dataset,valid_dates,datatype,unitstr,namestr,savestr):
-    inittime = datetime.datetime.strftime(dataset.index[0],'%m/%d %H') + '00 UTC'
-    
+def box_and_whisker(dataset,valid_dates,datatype,unitstr,namestr,savestr,inittime):
     plt.clf()
     fig = plt.figure(figsize=(12,8))
     ax = fig.add_subplot(1,1,1)
@@ -138,10 +134,10 @@ elif max_temp_df.index[0].hour == 12:
     valid_dates_lo = valid_dates
 
 # plot forecasts
-plotter(highs,'High Temperature at %s' % locname,'%s/highs.png' % savedir,season)
-plotter(lows,'Low Temperature at %s' % locname,'%s/lows.png' % savedir,season)
-plotter(dpts,'Mean Daily Dewpoint at %s' % locname,'%s/dwpt.png' % savedir,'dwpt')
-precip_plotter(precip,'Run-Total Precip. at %s' % locname,'%s/precip.png' % savedir)
+plotter(highs,'High Temperature at %s' % locname,'%s/highs.png' % savedir,season,inittime)
+plotter(lows,'Low Temperature at %s' % locname,'%s/lows.png' % savedir,season,inittime)
+plotter(dpts,'Mean Daily Dewpoint at %s' % locname,'%s/dwpt.png' % savedir,'dwpt',inittime)
+precip_plotter(precip,'Run-Total Precip. at %s' % locname,'%s/precip.png' % savedir,inittime)
 
 # get number of members containing precipitation
 precip_members = numpy.zeros(17)
@@ -165,6 +161,7 @@ for rect,label in zip(rects,labels):
 
 # x axis
 plt.xticks(rotation=90)
+plt.xlim(valid_dates[0],valid_dates[-1])
 plt.xlabel('Date/Time (UTC)',fontsize=14)
 ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %b-%d'))
@@ -179,10 +176,10 @@ plt.title('GEFS Members Indicating Precipitation at %s (init: %s)' % (locname,in
 plt.savefig('precip_percent.png',bbox_inches='tight')
 
 # create box and whisker plots
-box_and_whisker(highs,valid_dates_hi,'Temperature','degrees Fahrenheit','High Temperature at %s' % locname,'%s/box_highs.png' % savedir)
-box_and_whisker(lows,valid_dates_lo,'Temperature','degrees Fahrenheit','Low Temperature at %s' % locname,'%s/box_lows.png' % savedir)
-box_and_whisker(dpts,valid_dates,'Dewpoint','degrees Fahrenheit','Mean Dewpoint at %s' % locname,'%s/box_dwpt.png' % savedir)
-box_and_whisker(precip,valid_dates,'Precipitation','inches','Total Precip. at %s' % locname,'%s/box_precip.png' % savedir)
+box_and_whisker(highs,valid_dates_hi,'Temperature','degrees Fahrenheit','High Temperature at %s' % locname,'%s/box_highs.png' % savedir,inittime)
+box_and_whisker(lows,valid_dates_lo,'Temperature','degrees Fahrenheit','Low Temperature at %s' % locname,'%s/box_lows.png' % savedir,inittime)
+box_and_whisker(dpts,valid_dates,'Dewpoint','degrees Fahrenheit','Mean Dewpoint at %s' % locname,'%s/box_dwpt.png' % savedir,inittime)
+box_and_whisker(precip,valid_dates,'Precipitation','inches','Total Precip. at %s' % locname,'%s/box_precip.png' % savedir,inittime)
 
 ##### vv THIS PART STILL UNDER CONSTRUCTION vv #######
 
