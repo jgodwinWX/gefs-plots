@@ -146,7 +146,7 @@ for filename in sorted(os.listdir(directory)):
     if dpt_f[grblat,grblon] > 100.0 or dpt_f[grblat,grblon] < -50.0:
         dpt[int(pert)][int(hour)] = float('nan')
     else:
-        dpt[int(pert)][int(pert)] = dpt_f[grblat,grblon]
+        dpt[int(pert)][int(hour)] = dpt_f[grblat,grblon]
 
     precip[int(pert)][int(hour)] = precip_in[grblat,grblon]
     snow[int(pert)][int(hour)] = catsnow[grblat,grblon]

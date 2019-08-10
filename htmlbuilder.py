@@ -34,6 +34,8 @@ def plotter(dataset,namestr,savestr,season):
         plt.ylim([40,110])
     elif season == 'cold':
         plt.ylim([0,90])
+    elif season == 'dwpt':
+        plt.ylim([0,100])
     else:
         plt.ylim([0,110])
     plt.title('GEFS Ensemble Daily %s' % namestr,fontsize=16)
@@ -80,7 +82,10 @@ def box_and_whisker(dataset,valid_dates,datatype,unitstr,namestr,savestr):
     # set the y limits for temperatures
     if 'Temperature' in namestr:
         plt.ylim([0,110])
-        plt.yticks(numpy.arange(0,110,10))
+        plt.yticks(numpy.arange(0,110,5))
+    elif 'Dewpoint' in namestr:
+        plt.ylim([0,100])
+        plt.yticks(numpy.arange(0,100,5))
 
     # y axis and title
     plt.ylabel('%s (%s)' % (datatype,unitstr),fontsize=14)
@@ -91,6 +96,7 @@ def box_and_whisker(dataset,valid_dates,datatype,unitstr,namestr,savestr):
 savedir = '/home/jgodwin/Documents/python/python/gefs-plots'
 max_temp_df = pandas.DataFrame.from_csv('%s/maxtemps.csv' % savedir)
 min_temp_df = pandas.DataFrame.from_csv('%s/mintemps.csv' % savedir)
+dpt_df = pandas.DataFrame.from_csv('%s/dewpoint.csv' % savedir)
 precip_df = pandas.DataFrame.from_csv('%s/precip.csv' % savedir)
 season = 'warm'
 
@@ -104,11 +110,13 @@ for ix,i in enumerate(max_temp_df.index):
 
 highs = max_temp_df.groupby(lambda row: row.date()).max()
 lows = min_temp_df.groupby(lambda row: row.date()).min()
+dpts = dpt_df.groupby(lambda row: row.date()).mean()
 precip = precip_df.groupby(lambda row: row.date()).sum()
 
 # plot forecasts
 plotter(highs,'High Temperature','%s/highs.png' % savedir,season)
 plotter(lows,'Low Temperature','%s/lows.png' % savedir,season)
+plotter(dpts,'Mean Daily Dewpoint','%s/dwpt.png' % savedir,'dwpt')
 precip_plotter(precip,'Run-Accumulated Precipitation','%s/precip.png' % savedir)
 
 # get number of members containing precipitation
@@ -152,6 +160,7 @@ plt.savefig('precip_percent.png',bbox_inches='tight')
 # create box and whisker plots
 box_and_whisker(highs,valid_dates,'Temperature','degrees Fahrenheit','High Temperature','%s/box_highs.png' % savedir)
 box_and_whisker(lows,valid_dates,'Temperature','degrees Fahrenheit','Low Temperature','%s/box_lows.png' % savedir)
+box_and_whisker(dpts,valid_dates,'Dewpoint','degrees Fahrenheit','Mean Dewpoint','%s/box_dwpt.png' % savedir)
 box_and_whisker(precip,valid_dates,'Precipitation','inches','Accumulated Precipitation','%s/box_precip.png' % savedir)
 
 ##### vv THIS PART STILL UNDER CONSTRUCTION vv #######
