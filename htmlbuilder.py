@@ -11,62 +11,67 @@ def utc_to_local(utc_dt,offset):
     return utc_dt + datetime.timedelta(hours=offset)
 
 def plotter(dataset,namestr,savestr,season):
+    inittime = datetime.datetime.strftime(dataset.index[0],'%m/%d %H') + '00 UTC'
     plt.clf()
 
     fig = plt.figure(figsize=(12,8))
-
     ax = fig.add_subplot(1,1,1)
-    ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%H'))
 
     plt.plot(dataset)
     plt.grid()
 
     # x axis
-    plt.xticks(rotation=90)
-    plt.xlabel('Date/Time (Local)',fontsize=14)
+    plt.xlim([dataset.index[0],dataset.index[-1]])
+    plt.xticks(dataset.index,rotation=90)
+    plt.xlabel('Date/Time (UTC)',fontsize=14)
     ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %b-%d'))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %b-%d %H'))
 
     # y axis and title
     plt.ylabel('Temperature (degrees Fahrenheit)',fontsize=14)
     if season == 'warm':
         plt.ylim([40,110])
+        plt.yticks(numpy.arange(40,110,5))
     elif season == 'cold':
         plt.ylim([0,90])
+        plt.yticks(numpy.arange(0,90,5))
     elif season == 'dwpt':
-        plt.ylim([0,100])
+        plt.ylim([20,85])
+        plt.yticks(numpy.arange(20,85,5))
     else:
         plt.ylim([0,110])
-    plt.title('GEFS Ensemble Daily %s' % namestr,fontsize=16)
+        plt.yticks(numpy.arange(0,110,5))
+    plt.title('GEFS Ensemble Daily %s (init: %s)' % (namestr,inittime),fontsize=16)
     plt.savefig(savestr,bbox_inches='tight')
 
 def precip_plotter(dataset,namestr,savestr):
+    inittime = datetime.datetime.strftime(dataset.index[0],'%m/%d %H') + '00 UTC'
     plt.clf()
 
     fig = plt.figure(figsize=(12,8))
-
     ax = fig.add_subplot(1,1,1)
 
     plt.plot(numpy.cumsum(dataset))
     plt.grid()
 
     # x axis
-    plt.xticks(rotation=90)
-    plt.xlabel('Date/Time (Local)',fontsize=14)
+    plt.xlim([dataset.index[0],dataset.index[-1]])
+    plt.xticks(dataset.index,rotation=90)
+    plt.xlabel('Date/Time (UTC)',fontsize=14)
     ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %b-%d'))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%a %b-%d %H'))
 
     # y axis and title
+    plt.ylim([0.0,4.0])
     plt.ylabel('Precipitation (inches)',fontsize=14)
-    plt.title('GEFS Ensemble Daily %s' % namestr,fontsize=16)
+    plt.title('GEFS Ensemble Daily %s (init: %s)' % (namestr,inittime),fontsize=16)
     plt.savefig(savestr,bbox_inches='tight')
 
 def box_and_whisker(dataset,valid_dates,datatype,unitstr,namestr,savestr):
+    inittime = datetime.datetime.strftime(dataset.index[0],'%m/%d %H') + '00 UTC'
+    
     plt.clf()
-
     fig = plt.figure(figsize=(12,8))
-
     ax = fig.add_subplot(1,1,1)
 
     # reformat the date labels
@@ -84,12 +89,15 @@ def box_and_whisker(dataset,valid_dates,datatype,unitstr,namestr,savestr):
         plt.ylim([0,110])
         plt.yticks(numpy.arange(0,110,5))
     elif 'Dewpoint' in namestr:
-        plt.ylim([0,100])
-        plt.yticks(numpy.arange(0,100,5))
+        plt.ylim([20,85])
+        plt.yticks(numpy.arange(20,85,5))
+    elif 'Precipitation' in namestr:
+        plt.ylim([0.0,4.0])
+        plt.yticks([0,0.10,0.25,0.50,1.0,2.0,3.0,4.0])
 
     # y axis and title
     plt.ylabel('%s (%s)' % (datatype,unitstr),fontsize=14)
-    plt.title('GEFS Ensemble Daily %s' % namestr,fontsize=16)
+    plt.title('GEFS Ensemble Daily %s (init: %s)' % (namestr,inittime),fontsize=16)
     plt.savefig(savestr,bbox_inches='tight')
 
 # open the csv files
@@ -99,13 +107,14 @@ min_temp_df = pandas.DataFrame.from_csv('%s/mintemps.csv' % savedir)
 dpt_df = pandas.DataFrame.from_csv('%s/dewpoint.csv' % savedir)
 precip_df = pandas.DataFrame.from_csv('%s/precip.csv' % savedir)
 season = 'warm'
+utcoffset = 0
 
 # convert the valid times into local times
 max_temp_df.index = pandas.to_datetime(max_temp_df.index)
 localtimes = [0.0] * len(max_temp_df.index)
 dates = [0.0] * len(max_temp_df.index)
 for ix,i in enumerate(max_temp_df.index):
-    localtimes[ix] = utc_to_local(i,-6)
+    localtimes[ix] = utc_to_local(i,utcoffset)
     dates[ix] = datetime.datetime.strftime(i,'%m/%d/%Y')
 
 highs = max_temp_df.groupby(lambda row: row.date()).max()

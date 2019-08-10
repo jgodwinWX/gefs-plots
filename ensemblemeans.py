@@ -180,12 +180,14 @@ for i in range(0,65):
 ### ENSEMBLE MEAN PLOTS ###
 # create ensemble mean plot
 vtimes = validTimes(str(grbs.message(1).dataDate),str(grbs.message(1).dataTime))
+inittime = datetime.datetime.strftime(vtimes[0],'%m/%d %H') + '00 UTC'
 plt.clf()
 fig = plt.figure(figsize=(12,8))
 ax = fig.add_subplot(1,1,1)
 plt.plot(vtimes,max_ensmean,color='r',label='Max Temperature')
 plt.plot(vtimes,min_ensmean,color='b',label='Min Temperature')
-plt.grid()
+plt.grid(which='major',linestyle='-',color='black')
+plt.grid(which='minor',linestyle='--',color='gray')
 
 # x axis settings
 plt.xticks(rotation=90)
@@ -193,10 +195,13 @@ plt.xlabel('Date/Time (UTC)',fontsize=14)
 plt.xlim([np.min(vtimes),np.max(vtimes)])
 ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%H'))
+ax.xaxis.set_minor_locator(mdates.HourLocator(interval=6))
 
 # y axis and title
+plt.yticks(np.arange(0,110,5))
+plt.ylim([0,110])
 plt.ylabel('Temperature (degrees Fahrenheit)',fontsize=14)
-plt.title('GEFS Ensemble Mean 6-Hourly Temperature for %s' % locname,fontsize=16)
+plt.title('GEFS Ensemble Mean 6-Hourly Temperature for %s (init: %s)' % (locname,inittime),fontsize=16)
 plt.legend(loc='upper right',fontsize=12)
 plt.savefig('%s/ensmean_temp.png' % savedir,bbox_inches='tight')
 
@@ -217,7 +222,8 @@ fig = plt.figure(figsize=(12,8))
 ax = fig.add_subplot(1,1,1)
 plt.bar(vtimes,precip_ensmean,width=0.25,color='g',align='center',label='6-Hour Precipitation')
 plt.plot(vtimes,np.cumsum(precip_ensmean),color='b',label='Run-Accumulated Precipitation')
-plt.grid()
+plt.grid(which='major',linestyle='-',color='black')
+plt.grid(which='minor',linestyle='--',color='gray')
 
 # x axis settings
 plt.xticks(rotation=90)
@@ -225,10 +231,13 @@ plt.xlabel('Date/Time (UTC)',fontsize=14)
 plt.xlim([np.min(vtimes),np.max(vtimes)])
 ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%H'))
+ax.xaxis.set_minor_locator(mdates.HourLocator(interval=6))
 
 # y axis and title
+plt.yticks([0,0.1,0.25,0.50,1,2,3,4])
+plt.ylim([0,4])
 plt.ylabel('Precipitation (inches)',fontsize=14)
-plt.title('GEFS Ensemble Mean Precipitation for  %s' % locname,fontsize=16)
+plt.title('GEFS Ensemble Mean Precipitation for %s (init: %s)' % (locname,inittime),fontsize=16)
 plt.legend(loc='upper left',fontsize=12)
 plt.savefig('%s/ensmean_precip.png' % savedir,bbox_inches='tight')
 
@@ -237,7 +246,8 @@ plt.clf()
 fig = plt.figure(figsize=(12,8))
 ax = fig.add_subplot(1,1,1)
 plt.plot(vtimes,dpt_ensmean,color='g',label='Dewpoint')
-plt.grid()
+plt.grid(which='major',linestyle='-',color='black')
+plt.grid(which='minor',linestyle='--',color='gray')
 
 # x axis settings
 plt.xticks(rotation=90)
@@ -245,11 +255,13 @@ plt.xlabel('Date/Time (UTC)',fontsize=14)
 plt.xlim([np.min(vtimes),np.max(vtimes)])
 ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%H'))
+ax.xaxis.set_minor_locator(mdates.HourLocator(interval=6))
 
 # y axis and title
-plt.ylim([0,100])
+plt.ylim([20,85])
+plt.yticks(np.arange(20,85,5))
 plt.ylabel('Dewpoint Temperature (F)',fontsize=14)
-plt.title('GEFS Ensemble Mean 6-Hourly Dewpoint for %s' % locname,fontsize=16)
+plt.title('GEFS Ensemble Mean 6-Hourly Dewpoint for %s (init: %s)' % (locname,inittime),fontsize=16)
 plt.legend(loc='upper right',fontsize=12)
 plt.savefig('%s/ensmean_dwpt.png' % savedir,bbox_inches='tight')
 
@@ -263,17 +275,23 @@ plt.bar(vtimes,fzramems,width=0.25,color='r',label='Freezing Rain',align='center
 plt.bar(vtimes,rainmems,width=0.25,color='g',label='Liquid Rain',align='center',bottom=snowmems+sleetmems+fzramems)
 
 # aesthetics
-plt.grid()
+plt.grid(which='major',linestyle='-',color='black')
+plt.grid(which='minor',linestyle='--',color='gray')
+
 plt.xticks(rotation=90)
 plt.xlabel('Date/Time (UTC)',fontsize=14)
 plt.xlim([np.min(vtimes),np.max(vtimes)])
 ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%H'))
+ax.xaxis.set_minor_locator(mdates.HourLocator(interval=6))
+
 plt.ylim([0,1])
+plt.yticks(np.arange(0,1,0.1))
 plt.ylabel('Percent of Members',fontsize=14)
 vals = ax.get_yticks()
 ax.set_yticklabels(['{:.0f}%'.format(x*100) for x in vals])
-plt.title('GEFS Categorical Precipitation Type for %s' % locname,fontsize=16)
+
+plt.title('GEFS Categorical Precipitation Type for %s (init: %s)' % (locname,inittime),fontsize=16)
 plt.legend(loc='upper right',fontsize='12')
 plt.savefig('%s/ptype.png' % savedir,bbox_inches='tight')
 
